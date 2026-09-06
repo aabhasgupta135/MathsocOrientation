@@ -44,10 +44,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 isNew = false;
                 console.log("User already exists, playing animation to reveal their existing team");
             } else {
-                // Determine new team beforehand
-                assignedTeam = teams[Math.floor(Math.random() * teams.length)];
+                // Determine new team beforehand with bias to balance sizes
+                const { data: allRegs } = await supabaseClient
+                    .from('registrations')
+                    .select('team');
+                
+                const teamCounts = { 'Team A': 0, 'Team B': 0, 'Team C': 0, 'Team D': 0 };
+                if (allRegs) {
+                    allRegs.forEach(reg => {
+                        if (teamCounts[reg.team] !== undefined) {
+                            teamCounts[reg.team]++;
+                        }
+                    });
+                }
+
+                let maxCount = 0;
+                for (const t of teams) {
+                    if (teamCounts[t] > maxCount) maxCount = teamCounts[t];
+                }
+
+                const weightedTeams = [];
+                for (const t of teams) {
+                    // Teams with fewer people get heavily weighted
+                    let diff = maxCount - teamCounts[t];
+                    let weight = Math.pow(diff + 1, 3); 
+                    for (let i = 0; i < weight; i++) {
+                        weightedTeams.push(t);
+                    }
+                }
+
+                assignedTeam = weightedTeams[Math.floor(Math.random() * weightedTeams.length)];
                 teamLetter = assignedTeam.replace('Team ', '');
-                console.log("New user, randomly assigned team:", assignedTeam);
+                console.log("New user, assigned team with bias:", assignedTeam, "Current counts:", teamCounts);
             }
 
             // Start Animation
