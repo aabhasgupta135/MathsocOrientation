@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('registration-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const name = document.getElementById('name').value.trim();
+        let name = document.getElementById('name').value.trim();
         const entryNumber = document.getElementById('entry-number').value.trim().toUpperCase();
         const errorEl = document.getElementById('error-message');
         const submitBtn = document.getElementById('submit-btn');
@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Processing...';
 
         try {
+            console.log("Checking DB for existing entry...");
             // Check if Entry Number already exists
             const { data: existing, error: fetchError } = await supabase
                 .from('registrations')
@@ -33,18 +34,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 .eq('entry_number', entryNumber)
                 .limit(1);
 
+            let assignedTeam, teamLetter, isNew = true;
+
             if (existing && existing.length > 0) {
                 // Already registered
-                localStorage.setItem('mathsoc_team', existing[0].team);
-                localStorage.setItem('mathsoc_name', existing[0].name);
-                showResult(existing[0].name, existing[0].team);
-                document.getElementById('registration-form').classList.add('hidden');
-                return;
+                assignedTeam = existing[0].team;
+                name = existing[0].name; // Use their originally registered name
+                teamLetter = assignedTeam.replace('Team ', '');
+                isNew = false;
+                console.log("User already exists, playing animation to reveal their existing team");
+            } else {
+                // Determine new team beforehand
+                assignedTeam = teams[Math.floor(Math.random() * teams.length)];
+                teamLetter = assignedTeam.replace('Team ', '');
+                console.log("New user, randomly assigned team:", assignedTeam);
             }
-
-            // Determine the team beforehand
-            const assignedTeam = teams[Math.floor(Math.random() * teams.length)];
-            const teamLetter = assignedTeam.replace('Team ', '');
 
             // Start Animation
             document.getElementById('registration-form').classList.add('hidden');
@@ -84,22 +88,25 @@ document.addEventListener('DOMContentLoaded', () => {
             slotStrip.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.9, 0.2, 1)';
             slotStrip.style.transform = `translateY(-${itemHeight * stopIndex}px)`;
 
-            // Wait for the animation to finish
-            await new Promise(resolve => setTimeout(resolve, 3800)); // slightly longer than transition
+            // Wait for the animation to finish (it takes 3.5 seconds)
+            await new Promise(resolve => setTimeout(resolve, 3800)); 
 
-            // Save to Supabase (ip_address is omitted to remove the IP restriction entirely)
-            const { error: insertError } = await supabase
-                .from('registrations')
-                .insert([
-                    { name: name, entry_number: entryNumber, team: assignedTeam }
-                ]);
-                
-            if (insertError) {
-                console.error(insertError);
-                if (insertError.code === '23505') {
-                    throw new Error('This Entry Number has already been registered.');
+            if (isNew) {
+                console.log("Inserting new user into DB...");
+                // Save to Supabase (ip_address is omitted to remove the IP restriction entirely)
+                const { error: insertError } = await supabase
+                    .from('registrations')
+                    .insert([
+                        { name: name, entry_number: entryNumber, team: assignedTeam }
+                    ]);
+                    
+                if (insertError) {
+                    console.error(insertError);
+                    if (insertError.code === '23505') {
+                        throw new Error('This Entry Number has already been registered.');
+                    }
+                    throw new Error('Failed to save registration. Please try again.');
                 }
-                throw new Error('Failed to save registration. Please try again.');
             }
 
             // Save locally
@@ -111,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showResult(name, assignedTeam);
 
         } catch (error) {
-            console.error(error);
+            console.error("Error during submission:", error);
             document.getElementById('registration-form').classList.remove('hidden');
             document.getElementById('animation-container').classList.add('hidden');
             errorEl.textContent = error.message;
