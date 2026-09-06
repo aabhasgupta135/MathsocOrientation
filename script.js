@@ -21,6 +21,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const errorEl = document.getElementById('error-message');
         const submitBtn = document.getElementById('submit-btn');
         
+        // Validate Entry Number format (e.g., 2024MT10001)
+        const entryRegex = /^20\d{2}MT\d{5}$/;
+        if (!entryRegex.test(entryNumber)) {
+            errorEl.textContent = 'Invalid Entry Number. Format must be 20XXMTXXXXX (e.g., 2024MT10001).';
+            errorEl.classList.remove('hidden');
+            return;
+        }
+
         errorEl.classList.add('hidden');
         submitBtn.disabled = true;
         submitBtn.textContent = 'Processing...';
