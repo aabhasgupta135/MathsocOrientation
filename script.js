@@ -2,7 +2,7 @@
 const SUPABASE_URL = 'https://vdayhyskbqftbosyuuxw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_PdTooE8JASI-XmWZ7FQ1JQ_l4M077U4';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const teams = ['Team A', 'Team B', 'Team C', 'Team D'];
 
@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             console.log("Checking DB for existing entry...");
             // Check if Entry Number already exists
-            const { data: existing, error: fetchError } = await supabase
+            const { data: existing, error: fetchError } = await supabaseClient
                 .from('registrations')
                 .select('team, name')
                 .eq('entry_number', entryNumber)
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (isNew) {
                 console.log("Inserting new user into DB...");
                 // Save to Supabase (ip_address is omitted to remove the IP restriction entirely)
-                const { error: insertError } = await supabase
+                const { error: insertError } = await supabaseClient
                     .from('registrations')
                     .insert([
                         { name: name, entry_number: entryNumber, team: assignedTeam }
