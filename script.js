@@ -1,5 +1,5 @@
-// Replace with your actual Supabase Project URL before deploying
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
+// Supabase Project configuration
+const SUPABASE_URL = 'https://vdayhyskbqftbosyuuxw.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_PdTooE8JASI-XmWZ7FQ1JQ_l4M077U4';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
