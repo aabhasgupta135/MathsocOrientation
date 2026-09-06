@@ -26,17 +26,25 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Processing...';
 
         try {
-            // Get User IP to prevent multiple registrations from same IP
-            const ipResponse = await fetch('https://api.ipify.org?format=json');
-            const ipData = await ipResponse.json();
-            const ipAddress = ipData.ip;
+            // Get User IP to prevent multiple registrations from same IP (Adblockers might block this)
+            let ipAddress = null;
+            try {
+                const ipResponse = await fetch('https://api.ipify.org?format=json');
+                const ipData = await ipResponse.json();
+                ipAddress = ipData.ip;
+            } catch (err) {
+                console.warn('Could not fetch IP, proceeding without IP check.', err);
+            }
 
             // Check if IP or Entry Number exists
-            const { data: existing, error: fetchError } = await supabase
-                .from('registrations')
-                .select('team, name')
-                .or(`ip_address.eq.${ipAddress},entry_number.eq.${entryNumber}`)
-                .limit(1);
+            let query = supabase.from('registrations').select('team, name');
+            if (ipAddress) {
+                query = query.or(`ip_address.eq.${ipAddress},entry_number.eq.${entryNumber}`);
+            } else {
+                query = query.eq('entry_number', entryNumber);
+            }
+            
+            const { data: existing, error: fetchError } = await query.limit(1);
 
             if (existing && existing.length > 0) {
                 // Already registered
