@@ -1,0 +1,158 @@
+:root {
+    --primary-color: #0f4c75;
+    --secondary-color: #3282b8;
+    --bg-color: #1b262c;
+    --text-color: #bbe1fa;
+    --error-color: #ff4c4c;
+    --success-color: #00b8a9;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    background: rgba(15, 76, 117, 0.2);
+    border: 1px solid var(--secondary-color);
+    border-radius: 12px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.logo {
+    width: 120px;
+    height: auto;
+    margin-bottom: 1rem;
+}
+
+h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: #fff;
+}
+
+h2 {
+    margin: 0.5rem 0 2rem;
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid var(--secondary-color);
+    background: transparent;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: none;
+    border-color: #fff;
+}
+
+button {
+    width: 100%;
+    padding: 1rem;
+    background-color: var(--secondary-color);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: var(--primary-color);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.error {
+    color: var(--error-color);
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+/* Animation Container */
+#animation-container {
+    margin-top: 2rem;
+}
+
+.spinner {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    border: 4px solid var(--secondary-color);
+    border-top-color: #fff;
+    animation: spin 1s infinite linear;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#spinning-text {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    animation: counterSpin 1s infinite linear;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes counterSpin {
+    to { transform: rotate(-360deg); }
+}
+
+/* Result Container */
+#result-container {
+    margin-top: 2rem;
+}
+
+.team-badge {
+    background-color: var(--success-color);
+    color: #fff;
+    font-size: 2rem;
+    font-weight: bold;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    display: inline-block;
+    margin-top: 1rem;
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathSoc IITD - Fresher Orientation</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="mathsoc.png" alt="MathSoc Logo" class="logo">
+            <h1>MathSoc IITD</h1>
+            <h2>Fresher Orientation</h2>
+        </header>
+        
+        <main id="main-content">
+            <form id="registration-form">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" required placeholder="Enter your full name" autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="entry-number">Entry Number</label>
+                    <input type="text" id="entry-number" required placeholder="e.g. 2024MT1xxxx" autocomplete="off">
+                </div>
+                <button type="submit" id="submit-btn">Get My Team!</button>
+                <p id="error-message" class="error hidden"></p>
+            </form>
+            
+            <div id="animation-container" class="hidden">
+                <div class="spinner">
+                    <div id="spinning-text">?</div>
+                </div>
+                <p>Assigning your team...</p>
+            </div>
+            
+            <div id="result-container" class="hidden">
+                <h3>Congratulations, <span id="result-name"></span>!</h3>
+                <p>You have been assigned to</p>
+                <div id="assigned-team" class="team-badge">Team A</div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
