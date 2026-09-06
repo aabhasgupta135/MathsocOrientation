@@ -7,7 +7,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const teams = ['Team A', 'Team B', 'Team C', 'Team D'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check if user already registered on this device
+    // Check if user already registered on this device locally
     if (localStorage.getItem('mathsoc_team')) {
         showResult(localStorage.getItem('mathsoc_name'), localStorage.getItem('mathsoc_team'));
         document.getElementById('registration-form').classList.add('hidden');
@@ -26,25 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Processing...';
 
         try {
-            // Get User IP to prevent multiple registrations from same IP (Adblockers might block this)
-            let ipAddress = null;
-            try {
-                const ipResponse = await fetch('https://api.ipify.org?format=json');
-                const ipData = await ipResponse.json();
-                ipAddress = ipData.ip;
-            } catch (err) {
-                console.warn('Could not fetch IP, proceeding without IP check.', err);
-            }
-
-            // Check if IP or Entry Number exists
-            let query = supabase.from('registrations').select('team, name');
-            if (ipAddress) {
-                query = query.or(`ip_address.eq.${ipAddress},entry_number.eq.${entryNumber}`);
-            } else {
-                query = query.eq('entry_number', entryNumber);
-            }
-            
-            const { data: existing, error: fetchError } = await query.limit(1);
+            // Check if Entry Number already exists
+            const { data: existing, error: fetchError } = await supabase
+                .from('registrations')
+                .select('team, name')
+                .eq('entry_number', entryNumber)
+                .limit(1);
 
             if (existing && existing.length > 0) {
                 // Already registered
@@ -55,47 +42,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Start animation
+            // Determine the team beforehand
+            const assignedTeam = teams[Math.floor(Math.random() * teams.length)];
+            const teamLetter = assignedTeam.replace('Team ', '');
+
+            // Start Animation
             document.getElementById('registration-form').classList.add('hidden');
             const animationContainer = document.getElementById('animation-container');
             animationContainer.classList.remove('hidden');
             
-            const spinningText = document.getElementById('spinning-text');
+            const slotStrip = document.getElementById('slot-strip');
+            slotStrip.innerHTML = ''; // clear strip
             
-            // Rapidly change text to simulate randomization
-            let interval = setInterval(() => {
-                const randomTempTeam = ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)];
-                spinningText.textContent = randomTempTeam;
-            }, 100);
+            // Build the slot machine strip (30 items)
+            // We want it to stop at index 25
+            const stopIndex = 25;
+            const itemHeight = 100; // pixels
+            const letters = ['A', 'B', 'C', 'D'];
+            
+            for (let i = 0; i < 30; i++) {
+                const el = document.createElement('div');
+                el.className = 'slot-item';
+                if (i === stopIndex) {
+                    el.textContent = teamLetter;
+                    el.classList.add('winner');
+                } else {
+                    el.textContent = letters[Math.floor(Math.random() * letters.length)];
+                }
+                slotStrip.appendChild(el);
+            }
+            
+            // Reset position instantly
+            slotStrip.style.transition = 'none';
+            slotStrip.style.transform = 'translateY(0px)';
+            
+            // Force browser reflow to apply the reset instantly before animating
+            void slotStrip.offsetWidth;
+            
+            // Start spinning
+            // We use a cubic-bezier easing that starts fast and slows down to a dramatic stop
+            slotStrip.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.9, 0.2, 1)';
+            slotStrip.style.transform = `translateY(-${itemHeight * stopIndex}px)`;
 
-            // Wait for 2.5 seconds for dramatic effect
-            await new Promise(resolve => setTimeout(resolve, 2500));
-            clearInterval(interval);
-            
-            // Assign actual team
-            const assignedTeam = teams[Math.floor(Math.random() * teams.length)];
-            spinningText.textContent = assignedTeam.replace('Team ', '');
-            
-            // Save to Supabase
+            // Wait for the animation to finish
+            await new Promise(resolve => setTimeout(resolve, 3800)); // slightly longer than transition
+
+            // Save to Supabase (ip_address is omitted to remove the IP restriction entirely)
             const { error: insertError } = await supabase
                 .from('registrations')
                 .insert([
-                    { name: name, entry_number: entryNumber, team: assignedTeam, ip_address: ipAddress }
+                    { name: name, entry_number: entryNumber, team: assignedTeam }
                 ]);
                 
             if (insertError) {
                 console.error(insertError);
                 if (insertError.code === '23505') {
-                    throw new Error('This IP or Entry Number has already been registered.');
+                    throw new Error('This Entry Number has already been registered.');
                 }
-                throw new Error('Failed to save registration. Please ensure your Supabase URL is correct.');
+                throw new Error('Failed to save registration. Please try again.');
             }
 
             // Save locally
             localStorage.setItem('mathsoc_team', assignedTeam);
             localStorage.setItem('mathsoc_name', name);
 
-            // Show result
+            // Hide animation, show result
             animationContainer.classList.add('hidden');
             showResult(name, assignedTeam);
 
